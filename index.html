@@ -1,27 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Стоматология</title>
+  <meta name="description" content="Архитектура улыбки - дом функциональной стоматологии в Новосибирске.">
+  <title>Архитектура улыбки | Дом функциональной стоматологии</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Стоматология «Название»</h1>
-    <p>Здоровая улыбка — уверенность каждый день</p>
+  <header class="hero" id="top">
+    <nav class="nav container" aria-label="Навигация">
+      <a class="brand" href="#top"><span class="tooth-mark">◇</span><span>АРХИТЕКТУРА<br><small>УЛЫБКИ</small></span></a>
+      <div class="nav-links"><a href="#services">Услуги</a><a href="#clinic">О клинике</a><a href="#doctors">Врачи</a><a href="#contacts">Контакты</a></div>
+      <a class="button button-light" href="tel:+79232323230">Позвонить <span>→</span></a>
+    </nav>
+
+    <div class="hero-content container">
+      <div class="hero-copy">
+        <p class="eyebrow">ДОМ ФУНКЦИОНАЛЬНОЙ СТОМАТОЛОГИИ</p>
+        <h1>Здоровая улыбка,<br><em>в которой</em><br>вы уверены</h1>
+        <p class="hero-text">Объединяем точную диагностику, современные технологии и бережный подход, чтобы забота о зубах была понятной и комфортной.</p>
+        <div class="hero-actions"><a class="button" href="tel:+79232323230">Записаться на консультацию <span>→</span></a><a class="video-link" href="#clinic"><i>▷</i> Узнать о клинике</a></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="smile">⌒</div><div class="hero-caption">Естественная<br>эстетика</div></div>
+    </div>
   </header>
 
   <main>
-    <h2>Наши услуги</h2>
-    <ul>
-      <li>Лечение зубов</li>
-      <li>Профессиональная чистка</li>
-      <li>Имплантация</li>
-    </ul>
+    <section class="benefits container" aria-label="Преимущества">
+      <article><span>◌</span><div><h2>Точная диагностика</h2><p>Понятный план лечения до начала процедур</p></div></article>
+      <article><span>✦</span><div><h2>Комплексный подход</h2><p>Врачи разных направлений работают вместе</p></div></article>
+      <article><span>◇</span><div><h2>Функция и эстетика</h2><p>Заботимся о здоровье и красоте улыбки</p></div></article>
+    </section>
 
-    <h2>Запись на приём</h2>
-    <p>Телефон: +7 (000) 000-00-00</p>
+    <section class="section container" id="services">
+      <div class="section-title"><p class="eyebrow">НАПРАВЛЕНИЯ</p><h2>Стоматология<br><em>в полном объёме</em></h2><p>Выбираем решение, которое подходит именно вам, и объясняем каждый шаг лечения.</p></div>
+      <div class="services-grid">
+        <article><span>01</span><h3>Ортопедия</h3><p>Восстановление зубов, коронки, протезирование.</p></article>
+        <article><span>02</span><h3>Хирургия</h3><p>Удаление зубов и хирургические процедуры.</p></article>
+        <article><span>03</span><h3>Терапия</h3><p>Лечение кариеса и сохранение здоровья зубов.</p></article>
+        <article><span>04</span><h3>Гигиена</h3><p>Профессиональная чистка и профилактика.</p></article>
+        <article><span>05</span><h3>Ортодонтия</h3><p>Коррекция прикуса и выравнивание зубов.</p></article>
+      </div>
+    </section>
+
+    <section class="clinic" id="clinic"><div class="container clinic-grid">
+      <div class="clinic-photo" aria-label="Интерьер клиники"><div class="clinic-light"></div><div class="clinic-chair"></div><p>Пространство,<br>где спокойно</p></div>
+      <div class="clinic-copy"><p class="eyebrow">О КЛИНИКЕ</p><h2>Технологии,<br>которым можно<br><em>доверять</em></h2><p>«Архитектура улыбки» - это современная клиника, где функциональная стоматология сочетается с вниманием к человеку. Мы создаём комфортную атмосферу и ставим здоровье пациента на первое место.</p><a class="underlined" href="tel:+79232323230">Записаться на консультацию <span>→</span></a></div>
+    </div></section>
+
+    <section class="section container" id="doctors">
+      <div class="section-title doctors-title"><div><p class="eyebrow">КОМАНДА</p><h2>Врачи, которым<br><em>можно доверять</em></h2></div><p>Специалисты клиники работают внимательно, деликатно и с опорой на современные знания.</p></div>
+      <div class="doctors-grid">
+        <article class="doctor-card"><div class="doctor-portrait portrait-one"><span>АВ</span></div><p class="specialty">ВРАЧ-СТОМАТОЛОГ ОРТОПЕД</p><h3>Шишкин Алексей Викторович</h3><a href="tel:+79232323230">Записаться <span>→</span></a></article>
+        <article class="doctor-card"><div class="doctor-portrait portrait-two"><span>СА</span></div><p class="specialty">ВРАЧ-СТОМАТОЛОГ ХИРУРГ</p><h3>Ракутов Сергей Андреевич</h3><a href="tel:+79232323230">Записаться <span>→</span></a></article>
+      </div>
+    </section>
+
+    <section class="visit container" id="contacts"><div class="visit-content"><p class="eyebrow">СДЕЛАЙТЕ ПЕРВЫЙ ШАГ</p><h2>Запишитесь<br>на консультацию</h2><p>Ответим на вопросы, подберём удобное время и познакомим с клиникой.</p><a class="button button-light" href="tel:+79232323230">+7 923 232-32-30 <span>→</span></a></div><div class="visit-info"><div><span>⌖</span><p>Новосибирск<br><strong>Железнодорожная улица, 18</strong><br>ЖК Прованс, 2 этаж</p></div><div><span>◷</span><p>Ежедневно<br><strong>09:00 - 20:00</strong></p></div></div></section>
   </main>
+
+  <footer><div class="container footer-row"><a class="brand" href="#top"><span class="tooth-mark">◇</span><span>АРХИТЕКТУРА<br><small>УЛЫБКИ</small></span></a><p>Дом функциональной стоматологии</p><a href="tel:+79232323230">+7 923 232-32-30</a></div></footer>
 </body>
 </html>
-<p>Добро пожаловать!</p>
