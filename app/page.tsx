@@ -967,7 +967,7 @@ function ImplantExperience() {
             <div className="relative z-10 h-full w-full will-change-transform">
               <ImplantCanvas triggerRef={sectionRef} />
             </div>
-            <div className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/55 backdrop-blur">Прокрутка управляет моделью</div>
+            <div className="pointer-events-none absolute bottom-3 right-3 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/55 backdrop-blur">Потяните, чтобы вращать · прокрутка управляет сценой</div>
           </div>
         </div>
       </div>

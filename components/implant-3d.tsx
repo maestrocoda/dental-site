@@ -193,9 +193,10 @@ function mountImplantScene(
     cameraY: camera.position.y,
     lift: 0,
   };
+  const interaction = { rotation: 0 };
 
   const applyState = () => {
-    modelRoot.rotation.y = state.rotation;
+    modelRoot.rotation.y = state.rotation + interaction.rotation;
     modelRoot.rotation.x = state.rotationX;
     modelRoot.position.y = state.lift;
     camera.position.set(state.cameraX, state.cameraY, state.cameraZ);
@@ -222,6 +223,51 @@ function mountImplantScene(
 
   applyState();
 
+  // Horizontal drag adds an independent rotation offset on top of the
+  // scroll-driven timeline. touch-action: pan-y preserves normal page scroll.
+  host.style.cursor = "grab";
+  host.style.touchAction = "pan-y";
+  host.tabIndex = 0;
+  let dragging = false;
+  let lastPointerX = 0;
+  let targetRotation = 0;
+  const rotateTo = gsap.quickTo(interaction, "rotation", {
+    duration: 0.42,
+    ease: "power3.out",
+    onUpdate: applyState,
+  });
+
+  const handlePointerDown = (event: PointerEvent) => {
+    dragging = true;
+    lastPointerX = event.clientX;
+    host.style.cursor = "grabbing";
+    host.setPointerCapture(event.pointerId);
+  };
+  const handlePointerMove = (event: PointerEvent) => {
+    if (!dragging) return;
+    const deltaX = event.clientX - lastPointerX;
+    lastPointerX = event.clientX;
+    targetRotation += deltaX * (isMobile ? 0.016 : 0.011);
+    rotateTo(targetRotation);
+  };
+  const handlePointerUp = (event: PointerEvent) => {
+    dragging = false;
+    host.style.cursor = "grab";
+    if (host.hasPointerCapture(event.pointerId)) host.releasePointerCapture(event.pointerId);
+  };
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    targetRotation += event.key === "ArrowLeft" ? -0.32 : 0.32;
+    rotateTo(targetRotation);
+  };
+
+  host.addEventListener("pointerdown", handlePointerDown);
+  host.addEventListener("pointermove", handlePointerMove);
+  host.addEventListener("pointerup", handlePointerUp);
+  host.addEventListener("pointercancel", handlePointerUp);
+  host.addEventListener("keydown", handleKeyDown);
+
   const resize = () => {
     const width = Math.max(host.clientWidth, 1);
     const height = Math.max(host.clientHeight, 1);
@@ -243,6 +289,12 @@ function mountImplantScene(
   return () => {
     window.cancelAnimationFrame(frame);
     resizeObserver.disconnect();
+    host.removeEventListener("pointerdown", handlePointerDown);
+    host.removeEventListener("pointermove", handlePointerMove);
+    host.removeEventListener("pointerup", handlePointerUp);
+    host.removeEventListener("pointercancel", handlePointerUp);
+    host.removeEventListener("keydown", handleKeyDown);
+    gsap.killTweensOf(interaction);
     timeline.scrollTrigger?.kill();
     timeline.kill();
     scene.traverse((object) => {
@@ -285,7 +337,7 @@ export function ImplantCanvas({ modelUrl, triggerRef }: ImplantCanvasProps) {
     <div
       ref={hostRef}
       className="h-full w-full"
-      aria-label="Интерактивная 3D-визуализация имплантата"
+      aria-label="Интерактивная 3D-визуализация имплантата. Потяните мышью или пальцем, чтобы вращать"
       role="img"
     />
   );
