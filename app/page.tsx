@@ -960,6 +960,9 @@ function ImplantExperience() {
             <div className="mt-9 flex gap-2" aria-label="Этапы имплантации">
               {implantSteps.map((item, index) => <span key={item.eyebrow} className={`h-1.5 rounded-full transition-all duration-500 ${activeStep === index ? "w-12 bg-[#e3bb9d]" : "w-5 bg-white/20"}`} />)}
             </div>
+            <p className="mt-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/45">
+              <span className="h-px w-7 bg-[#e3bb9d]" /> Прокрутите страницу или потяните модель
+            </p>
             <p className="mt-9 max-w-sm text-xs leading-5 text-white/38">Демонстрационная визуализация. Окончательное решение о лечении принимает врач после диагностики.</p>
           </div>
           <div className="relative mx-auto flex h-[min(68vh,720px)] w-full max-w-[620px] items-center justify-center">
@@ -967,7 +970,6 @@ function ImplantExperience() {
             <div className="relative z-10 h-full w-full will-change-transform">
               <ImplantCanvas triggerRef={sectionRef} />
             </div>
-            <div className="pointer-events-none absolute bottom-3 right-3 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/55 backdrop-blur">Потяните, чтобы вращать · прокрутка управляет сценой</div>
           </div>
         </div>
       </div>

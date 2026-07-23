@@ -121,7 +121,9 @@ function mountImplantScene(
   scene.fog = new THREE.FogExp2(0x0b0c0c, 0.06);
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-  camera.position.set(0.1, 0.08, isMobile ? 6.3 : 5.8);
+  // Keep the full temporary implant visible; the scroll animation adds depth
+  // through rotation and a restrained zoom instead of cropping the silhouette.
+  camera.position.set(0.1, 0.08, isMobile ? 7.65 : 7.45);
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -219,8 +221,8 @@ function mountImplantScene(
   });
 
   timeline
-    .to(state, { rotation: Math.PI * 2, cameraZ: isMobile ? 5.8 : 4.7, cameraX: 0.16, lift: 0.08, duration: 0.55 })
-    .to(state, { rotation: Math.PI * 2.85, rotationX: -0.02, cameraZ: isMobile ? 5.4 : 5.05, cameraX: -0.1, cameraY: 0.05, lift: -0.08, duration: 0.45 });
+    .to(state, { rotation: Math.PI * 2, cameraZ: isMobile ? 7.2 : 6.95, cameraX: 0.16, lift: 0.08, duration: 0.55 })
+    .to(state, { rotation: Math.PI * 2.85, rotationX: -0.02, cameraZ: isMobile ? 6.9 : 6.65, cameraX: -0.1, cameraY: 0.05, lift: -0.08, duration: 0.45 });
 
   applyState();
 
