@@ -190,7 +190,6 @@ export default function Home() {
                 href={["#services", "#clinic", "#doctors", "#contacts"][index]}
                 className="group relative flex min-h-12 items-center rounded-xl px-5 text-[15px] font-medium text-white/70 transition duration-300 hover:bg-white/[.1] hover:text-white focus-visible:bg-white/[.1] focus-visible:outline-none"
               >
-                <span className="mr-2 text-[9px] font-bold tracking-[.12em] text-[#d9b49c]/0 transition duration-300 group-hover:text-[#d9b49c]">0{index + 1}</span>
                 {item}
               </a>
             ))}
