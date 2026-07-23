@@ -22,24 +22,6 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
 
-const slides = [
-  {
-    image: "/interiors/reception.jpg",
-    label: "Естественная эстетика",
-    alt: "Зона ожидания клиники",
-  },
-  {
-    image: "/interiors/office.jpg",
-    label: "Тёплая атмосфера",
-    alt: "Кабинет клиники",
-  },
-  {
-    image: "/interiors/dental-room.jpg",
-    label: "Точная работа",
-    alt: "Стоматологический кабинет",
-  },
-];
-
 const services = [
   [
     "Ортопедия",
@@ -124,7 +106,6 @@ const faqs = [
 ];
 
 export default function Home() {
-  const [active, setActive] = useState(0);
   const [activeService, setActiveService] = useState(0);
   const [formSent, setFormSent] = useState(false);
   const [formError, setFormError] = useState("");
@@ -133,19 +114,11 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   useEffect(() => {
-    const timer = window.setInterval(
-      () => setActive((value) => (value + 1) % slides.length),
-      5200,
-    );
-    return () => window.clearInterval(timer);
-  }, []);
-  useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
   }, [menuOpen]);
-  const slide = slides[active];
   async function submitAppointment(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!consent) return;
@@ -315,32 +288,25 @@ export default function Home() {
             transition={{ delay: 0.12, duration: 0.75 }}
             className="image-frame relative min-h-[420px] overflow-hidden rounded-[4px] shadow-2xl shadow-black/50 lg:min-h-[590px]"
           >
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={slide.image}
-                src={slide.image}
-                alt={slide.alt}
-                initial={{ opacity: 0, scale: 1.07 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.98 }}
-                transition={{ duration: 1.05, ease: "easeInOut" }}
-                className="absolute inset-0 h-full w-full object-cover photo-breathe"
-              />
-            </AnimatePresence>
-            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/60 to-transparent" />
-            <p className="absolute bottom-7 right-7 max-w-[180px] border-l border-white/80 pl-4 font-serif text-3xl leading-none">
-              {slide.label}
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster="/interiors/reception.jpg"
+              className="absolute inset-0 h-full w-full object-cover"
+              aria-label="Интерьер клиники Архитектура улыбки"
+            >
+              <source src="/videos/hero-reception.webm" type="video/webm" />
+              <source src="/videos/hero-reception.mp4" type="video/mp4" />
+            </video>
+            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(10,11,11,.22),transparent_55%,rgba(0,0,0,.28))]" />
+            <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/70 to-transparent" />
+            <p className="absolute bottom-7 right-7 max-w-[210px] border-l border-white/80 pl-4 font-serif text-3xl leading-none">
+              Интерьер, в котором спокойно
             </p>
-            <div className="absolute bottom-7 left-7 flex gap-2">
-              {slides.map((item, index) => (
-                <button
-                  key={item.image}
-                  onClick={() => setActive(index)}
-                  aria-label={`Показать слайд ${index + 1}`}
-                  className={`h-1.5 rounded-full transition-all ${active === index ? "w-10 bg-[#e3bb9d]" : "w-4 bg-white/50"}`}
-                />
-              ))}
-            </div>
+            <p className="absolute bottom-7 left-7 text-[10px] font-bold uppercase tracking-[.18em] text-white/65">Архитектура улыбки</p>
           </motion.div>
         </div>
       </section>
@@ -864,9 +830,9 @@ function Journey({
 }
 
 const storyFrames = [
-  { image: "/interiors/reception.jpg", eyebrow: "01 / Пространство", title: "Всё начинается со спокойствия", text: "Свет, тишина и понятный маршрут помогают почувствовать себя уверенно ещё до встречи с врачом." },
-  { image: "/interiors/office.jpg", eyebrow: "02 / Диалог", title: "Решение рождается вместе", text: "Мы обсуждаем ситуацию, показываем варианты и составляем план, в котором понятен каждый следующий шаг." },
-  { image: "/interiors/dental-room.jpg", eyebrow: "03 / Лечение", title: "Точность становится результатом", text: "Современное оснащение и командная работа объединяют диагностику, лечение и восстановление улыбки." },
+  { video: "/videos/clinic-corridor.mp4", poster: "/interiors/reception.jpg", eyebrow: "01 / Пространство", title: "Всё начинается со спокойствия", text: "Свет, тишина и понятный маршрут помогают почувствовать себя уверенно ещё до встречи с врачом." },
+  { video: "/videos/clinic-room.mp4", poster: "/interiors/office.jpg", eyebrow: "02 / Диалог", title: "Решение рождается вместе", text: "Мы обсуждаем ситуацию, показываем варианты и составляем план, в котором понятен каждый следующий шаг." },
+  { video: "/videos/treatment-room.mp4", poster: "/interiors/dental-room.jpg", eyebrow: "03 / Лечение", title: "Точность становится результатом", text: "Современное оснащение и командная работа объединяют диагностику, лечение и восстановление улыбки." },
 ];
 
 function ClinicStory() {
@@ -887,7 +853,7 @@ function ClinicStory() {
     <section id="story" ref={sectionRef} className="story-scroll relative h-[270vh] bg-[#0b0c0c]" aria-label="История клиники">
       <div className="sticky top-0 h-screen overflow-hidden">
         <AnimatePresence mode="sync">
-          <motion.img key={storyFrames[storyStage].image} src={storyFrames[storyStage].image} alt="Интерьер Дома функциональной стоматологии" initial={{ opacity: 0, scale: 1.07 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: 0.65 }, scale: { duration: 2.2, ease: "easeOut" } }} className="absolute inset-0 h-full w-full object-cover will-change-transform" />
+          <motion.video key={storyFrames[storyStage].video} src={storyFrames[storyStage].video} poster={storyFrames[storyStage].poster} autoPlay muted loop playsInline preload="metadata" initial={{ opacity: 0, scale: 1.07 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: 0.65 }, scale: { duration: 2.2, ease: "easeOut" } }} className="absolute inset-0 h-full w-full object-cover will-change-transform" />
         </AnimatePresence>
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,6,.88)_0%,rgba(5,6,6,.58)_37%,rgba(5,6,6,.12)_70%),linear-gradient(0deg,rgba(5,6,6,.68),transparent_48%)]" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#0b0c0c] to-transparent" />
