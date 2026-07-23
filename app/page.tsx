@@ -5,6 +5,7 @@ import {
   motion,
   useMotionValueEvent,
   useScroll,
+  useTransform,
 } from "framer-motion";
 import {
   ArrowRight,
@@ -455,6 +456,7 @@ export default function Home() {
         </Reveal>
       </section>
     <ClinicStory />
+    <ImplantExperience />
     <section id="clinic" className="bg-[#151716] py-28">
         <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:grid-cols-2 lg:px-10">
           <Reveal>
@@ -904,6 +906,77 @@ function ClinicStory() {
         </div>
         <div className="absolute bottom-10 right-6 top-1/2 hidden w-px -translate-y-1/2 bg-white/20 md:block lg:right-10"><motion.div animate={{ height: `${storyProgress * 100}%` }} transition={{ duration: 0.12, ease: "linear" }} className="w-px bg-[#e3bb9d]" /><span className="absolute -left-8 -top-8 text-[10px] tracking-[.16em] text-white/45">ПУТЬ</span></div>
         <div className="absolute bottom-6 left-6 flex items-center gap-3 text-[10px] uppercase tracking-[.16em] text-white/45 lg:left-10"><span className="h-px w-10 bg-[#e3bb9d]" /> Прокрутите, чтобы увидеть историю</div>
+      </div>
+    </section>
+  );
+}
+
+const implantSteps = [
+  {
+    eyebrow: "01 / Основа",
+    title: "Опора для будущего зуба",
+    text: "Имплантация начинается с диагностики: врач оценивает состояние тканей, объём кости и выбирает план лечения.",
+  },
+  {
+    eyebrow: "02 / Точность",
+    title: "План, созданный для вашей ситуации",
+    text: "Тип имплантата, его размер и положение определяются индивидуально — после обследования и консультации специалиста.",
+  },
+  {
+    eyebrow: "03 / Результат",
+    title: "Функция и естественный вид",
+    text: "После завершения всех этапов конструкция помогает восстановить жевательную функцию и эстетику улыбки.",
+  },
+];
+
+function ImplantExperience() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+  const rotateY = useTransform(scrollYProgress, [0, 0.27, 0.58, 1], [-24, 26, -20, 18]);
+  const rotateZ = useTransform(scrollYProgress, [0, 0.5, 1], [-7, 4, -5]);
+  const y = useTransform(scrollYProgress, [0, 0.5, 1], [50, -12, -48]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.84, 1.05, 0.93]);
+  const sheenOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.08, 0.36, 0.12]);
+
+  useMotionValueEvent(scrollYProgress, "change", (progress) => {
+    const nextStep = progress < 0.39 ? 0 : progress < 0.71 ? 1 : 2;
+    setActiveStep((current) => (current === nextStep ? current : nextStep));
+  });
+
+  return (
+    <section ref={sectionRef} id="technology" className="relative h-[220vh] bg-[#111312]" aria-label="Технологии имплантации">
+      <div className="sticky top-0 min-h-screen overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_43%,rgba(217,180,156,.16),transparent_25%),linear-gradient(115deg,#0a0b0b_8%,#151716_58%,#0c0d0d)]" />
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#0b0c0c] to-transparent" />
+        <div className="relative mx-auto grid min-h-screen max-w-[1400px] items-center gap-4 px-6 py-24 lg:grid-cols-[.84fr_1.16fr] lg:px-10">
+          <div className="relative z-10 max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#e3bb9d]">Технологии / имплантация</p>
+            <h2 className="mt-6 font-serif text-[clamp(3.3rem,6.1vw,6.6rem)] leading-[.89] tracking-[-.065em] text-[#f8f5f0]">Имплантация —<br /><em className="font-normal text-[#d9b49c]">понятно по этапам</em></h2>
+            <AnimatePresence mode="wait">
+              <motion.div key={implantSteps[activeStep].title} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }} transition={{ duration: 0.34 }} className="mt-9 max-w-md">
+                <p className="text-[11px] font-bold uppercase tracking-[.17em] text-[#e3bb9d]">{implantSteps[activeStep].eyebrow}</p>
+                <h3 className="mt-3 font-serif text-3xl leading-tight text-white">{implantSteps[activeStep].title}</h3>
+                <p className="mt-4 text-base leading-7 text-white/63">{implantSteps[activeStep].text}</p>
+              </motion.div>
+            </AnimatePresence>
+            <div className="mt-9 flex gap-2" aria-label="Этапы имплантации">
+              {implantSteps.map((item, index) => <span key={item.eyebrow} className={`h-1.5 rounded-full transition-all duration-500 ${activeStep === index ? "w-12 bg-[#e3bb9d]" : "w-5 bg-white/20"}`} />)}
+            </div>
+            <p className="mt-9 max-w-sm text-xs leading-5 text-white/38">Демонстрационная визуализация. Окончательное решение о лечении принимает врач после диагностики.</p>
+          </div>
+          <div className="relative mx-auto flex h-[min(68vh,720px)] w-full max-w-[620px] items-center justify-center" style={{ perspective: "1200px" }}>
+            <div className="absolute inset-[12%] rounded-full bg-[#d9b49c]/15 blur-[100px]" />
+            <motion.div style={{ rotateY, rotateZ, y, scale, transformStyle: "preserve-3d" }} className="relative z-10 h-full w-full will-change-transform">
+              <img src="/technology/implant-concept.png" alt="Демонстрационная 3D-визуализация дентального имплантата" className="h-full w-full object-contain drop-shadow-[0_40px_70px_rgba(0,0,0,.68)]" />
+              <motion.div style={{ opacity: sheenOpacity }} className="pointer-events-none absolute inset-[18%_12%] rounded-full bg-[#f3d4ba]/25 blur-3xl" />
+            </motion.div>
+            <div className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/55 backdrop-blur">Прокрутка управляет моделью</div>
+          </div>
+        </div>
       </div>
     </section>
   );
