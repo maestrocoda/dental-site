@@ -18,75 +18,81 @@ type ImplantCanvasProps = {
 type SceneCleanup = () => void;
 
 function createProceduralImplant(isMobile: boolean) {
+  // Temporary visual stand-in based on the official Riellen's Reaction
+  // reference: root-shaped body, open conical connection and compact thread
+  // profile. Replace this group with the manufacturer's GLB when supplied.
   const implant = new THREE.Group();
-  const metal = new THREE.MeshPhysicalMaterial({
-    color: 0xb7bec1,
-    metalness: 0.96,
-    roughness: 0.2,
-    clearcoat: 0.32,
-    clearcoatRoughness: 0.14,
-    envMapIntensity: 1.5,
+  const titanium = new THREE.MeshPhysicalMaterial({
+    color: 0x34373a,
+    metalness: 0.94,
+    roughness: 0.27,
+    clearcoat: 0.28,
+    clearcoatRoughness: 0.16,
+    envMapIntensity: 1.35,
   });
-  const darkMetal = metal.clone();
-  darkMetal.color.setHex(0x8f989b);
-  darkMetal.roughness = 0.28;
+  const threadMetal = titanium.clone();
+  threadMetal.color.setHex(0x1f2225);
+  threadMetal.roughness = 0.34;
+  const innerConnection = new THREE.MeshPhysicalMaterial({
+    color: 0x6e294f,
+    metalness: 0.62,
+    roughness: 0.22,
+    clearcoat: 0.2,
+    envMapIntensity: 1.1,
+  });
+  const detail = isMobile ? 24 : 36;
 
   const core = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.46, 0.38, 2.55, isMobile ? 24 : 36, 1, false),
-    metal,
+    new THREE.CylinderGeometry(0.43, 0.31, 2.7, detail, 1, false),
+    titanium,
   );
-  core.position.y = -0.15;
+  core.position.y = -0.08;
   implant.add(core);
 
-  const shoulder = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.58, 0.49, 0.25, isMobile ? 24 : 36),
-    metal,
+  // Subtle platform shoulder; unlike the previous version this does not
+  // create a tall abutment and keeps the silhouette close to the product.
+  const platform = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.5, 0.43, 0.18, detail),
+    titanium,
   );
-  shoulder.position.y = 1.14;
-  implant.add(shoulder);
+  platform.position.y = 1.27;
+  implant.add(platform);
 
-  const connector = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.36, 0.45, 0.68, isMobile ? 24 : 36),
-    metal,
+  // Open conical connection, visible from the slight elevated camera angle.
+  const rim = new THREE.Mesh(
+    new THREE.TorusGeometry(0.31, 0.065, 10, detail),
+    titanium,
   );
-  connector.position.y = 1.56;
-  implant.add(connector);
-
-  const connectorTop = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.31, 0.36, 0.1, isMobile ? 24 : 36),
-    darkMetal,
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = 1.39;
+  implant.add(rim);
+  const connection = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.245, 0.285, 0.035, 6),
+    innerConnection,
   );
-  connectorTop.position.y = 1.95;
-  implant.add(connectorTop);
+  connection.position.y = 1.4;
+  implant.add(connection);
 
-  // A TubeGeometry helix keeps the temporary model lightweight while giving
-  // the same visual language as a real threaded implant.
-  const points: THREE.Vector3[] = [];
-  const segments = isMobile ? 150 : 260;
-  const turns = 13;
-  for (let index = 0; index <= segments; index += 1) {
-    const progress = index / segments;
-    const angle = progress * Math.PI * 2 * turns;
-    const taper = 0.52 - progress * 0.12;
-    points.push(
-      new THREE.Vector3(
-        Math.cos(angle) * taper,
-        -1.48 + progress * 2.72,
-        Math.sin(angle) * taper,
-      ),
+  // Individual low-profile rings read more like a machined dental thread
+  // than a smooth wire helix and cost less on mobile GPUs.
+  const ringCount = isMobile ? 14 : 18;
+  for (let index = 0; index < ringCount; index += 1) {
+    const progress = index / (ringCount - 1);
+    const y = -1.34 + progress * 2.55;
+    const radius = 0.335 + progress * 0.055;
+    const minor = progress < 0.26 ? 0.068 : 0.052;
+    const ring = new THREE.Mesh(
+      new THREE.TorusGeometry(radius, minor, 8, isMobile ? 20 : 28),
+      threadMetal,
     );
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = y;
+    implant.add(ring);
   }
 
-  const threadCurve = new THREE.CatmullRomCurve3(points);
-  const thread = new THREE.Mesh(
-    new THREE.TubeGeometry(threadCurve, segments, isMobile ? 0.045 : 0.055, 7, false),
-    metal,
-  );
-  implant.add(thread);
-
   const apex = new THREE.Mesh(
-    new THREE.ConeGeometry(0.26, 0.38, isMobile ? 20 : 28),
-    darkMetal,
+    new THREE.ConeGeometry(0.24, 0.34, isMobile ? 20 : 28),
+    threadMetal,
   );
   apex.position.y = -1.68;
   implant.add(apex);
