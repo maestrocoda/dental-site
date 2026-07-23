@@ -826,24 +826,68 @@ const storyFrames = [
 
 function ClinicStory() {
   const sectionRef = useRef<HTMLElement>(null);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const progressRef = useRef(0);
+  const frameRef = useRef<number | undefined>(undefined);
   const [storyStage, setStoryStage] = useState(0);
   const [storyProgress, setStoryProgress] = useState(0);
   const { scrollY } = useScroll();
+
+  const syncVideoFrame = (progress: number) => {
+    progressRef.current = progress;
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    frameRef.current = requestAnimationFrame(() => {
+      const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
+      const localProgress = Math.min(Math.max(progress * storyFrames.length - stage, 0), 0.995);
+      const video = videoRefs.current[stage];
+      if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
+      const targetTime = video.duration * localProgress;
+      if (Math.abs(video.currentTime - targetTime) > 0.015) video.currentTime = targetTime;
+    });
+  };
+
   useMotionValueEvent(scrollY, "change", (latest) => {
     const section = sectionRef.current;
     if (!section) return;
     const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
     const progress = Math.min(Math.max((latest - section.offsetTop) / travel, 0), 1);
     setStoryProgress(progress);
-    setStoryStage(progress < 0.34 ? 0 : progress < 0.68 ? 1 : 2);
+    const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
+    setStoryStage((current) => (current === stage ? current : stage));
+    syncVideoFrame(progress);
   });
+
+  useEffect(() => () => {
+    if (frameRef.current) cancelAnimationFrame(frameRef.current);
+  }, []);
 
   return (
     <section id="story" ref={sectionRef} className="story-scroll relative h-[270vh] bg-[#0b0c0c]" aria-label="История клиники">
       <div className="sticky top-0 h-screen overflow-hidden">
-        <AnimatePresence mode="sync">
-          <motion.video key={storyFrames[storyStage].video} src={storyFrames[storyStage].video} poster={storyFrames[storyStage].poster} autoPlay muted loop playsInline preload="metadata" initial={{ opacity: 0, scale: 1.07 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ opacity: { duration: 0.65 }, scale: { duration: 2.2, ease: "easeOut" } }} className="absolute inset-0 h-full w-full object-cover will-change-transform" />
-        </AnimatePresence>
+        {storyFrames.map((frame, index) => (
+          <motion.video
+            key={frame.video}
+            ref={(element) => { videoRefs.current[index] = element; }}
+            src={frame.video}
+            poster={frame.poster}
+            muted
+            playsInline
+            preload="auto"
+            onLoadedMetadata={(event) => {
+              const progress = progressRef.current;
+              const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
+              if (stage === index && event.currentTarget.duration > 0) {
+                const localProgress = Math.min(Math.max(progress * storyFrames.length - stage, 0), 0.995);
+                event.currentTarget.currentTime = event.currentTarget.duration * localProgress;
+              }
+            }}
+            initial={false}
+            animate={{ opacity: storyStage === index ? 1 : 0, scale: storyStage === index ? 1 : 1.04 }}
+            transition={{ opacity: { duration: 0.55 }, scale: { duration: 1.5, ease: "easeOut" } }}
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover will-change-transform"
+            aria-hidden={storyStage !== index}
+          />
+        ))}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,6,.88)_0%,rgba(5,6,6,.58)_37%,rgba(5,6,6,.12)_70%),linear-gradient(0deg,rgba(5,6,6,.68),transparent_48%)]" />
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#0b0c0c] to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
