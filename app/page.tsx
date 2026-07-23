@@ -302,25 +302,25 @@ export default function Home() {
       <Reveal className="relative z-10 mx-auto -mt-3 max-w-[1400px] px-6 lg:px-10">
         <section className="overflow-hidden rounded-2xl border border-white/15 bg-[linear-gradient(110deg,#191b1b,rgba(28,23,21,.94))] md:flex">
           <Feature
-            number="01"
-            title="Точная диагностика"
-            text="Понятный план до начала лечения"
+            icon={<ClipboardCheck className="h-5 w-5" />}
+            title="Диагностика и понятный план"
+            text="Объясняем ситуацию и этапы лечения до первой процедуры"
           />
           <Feature
-            number="02"
-            title="Комплексный подход"
-            text="Все специалисты — в одной клинике"
+            icon={<Stethoscope className="h-5 w-5" />}
+            title="Команда в одной клинике"
+            text="Согласовываем лечение между специалистами без лишних визитов"
           />
           <Feature
-            number="03"
-            title="Безопасность"
-            text="Контроль качества на каждом этапе"
+            icon={<ShieldCheck className="h-5 w-5" />}
+            title="Контроль качества"
+            text="Безопасность, стерилизация и внимание к деталям на каждом этапе"
           />
         </section>
       </Reveal>
       <section
         id="services"
-        className="mx-auto max-w-[1400px] px-6 py-28 lg:px-10"
+        className="mx-auto max-w-[1400px] px-6 py-20 lg:px-10 lg:py-24"
       >
         <Reveal>
           <p className="text-xs font-bold tracking-[.15em] text-[#d9b49c]">
@@ -734,28 +734,28 @@ export default function Home() {
 }
 
 function Feature({
-  number,
+  icon,
   title,
   text,
 }: {
-  number: string;
+  icon: ReactNode;
   title: string;
   text: string;
 }) {
   return (
     <motion.article
-      whileHover={{ x: 6 }}
+      whileHover={{ y: -2 }}
       transition={{ type: "spring", stiffness: 260, damping: 24 }}
-      className="group flex flex-1 items-start gap-5 border-b border-white/15 px-6 py-7 last:border-b-0 md:border-b-0 md:border-r md:px-8 lg:px-10"
+      className="group flex flex-1 items-start gap-4 border-b border-white/15 px-6 py-5 last:border-b-0 md:border-b-0 md:border-r md:px-7 lg:px-8"
     >
-      <span className="pt-1 text-xs tracking-[.14em] text-[#d9b49c]">
-        {number}
+      <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-[#d9b49c]/25 bg-[#d9b49c]/[.08] text-[#e6c3a7] transition duration-300 group-hover:border-[#d9b49c]/60 group-hover:bg-[#d9b49c]/[.16]">
+        {icon}
       </span>
       <div>
-        <h3 className="font-serif text-xl leading-tight text-white transition group-hover:text-[#f0d9c5] md:text-2xl">
+        <h3 className="font-serif text-lg leading-tight text-white transition group-hover:text-[#f0d9c5] md:text-xl">
           {title}
         </h3>
-        <p className="mt-2 text-sm leading-6 text-white/50">{text}</p>
+        <p className="mt-1.5 max-w-[310px] text-sm leading-5 text-white/50">{text}</p>
       </div>
     </motion.article>
   );
