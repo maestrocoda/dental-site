@@ -167,14 +167,14 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.92)_32%,rgba(5,6,6,.61)_55%,rgba(5,6,6,.3)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
         <nav
-          className="relative z-10 mx-auto flex h-24 max-w-[1400px] items-center justify-between border-b border-white/15 px-6 lg:px-10"
+          className="relative z-10 mx-auto flex max-w-[1400px] items-center justify-between px-5 py-5 sm:px-6 lg:px-10 lg:py-6"
           aria-label="Главное меню"
         >
           <a
             href="#top"
-            className="flex items-center gap-3 text-[13px] font-extrabold tracking-[.16em]"
+            className="group flex items-center gap-3 rounded-2xl py-2 pr-3 text-[13px] font-extrabold tracking-[.16em] transition hover:bg-white/[.06]"
           >
-            <span className="grid h-11 w-11 place-items-center rounded-full border border-[#d9b49c] text-[#d9b49c]">
+            <span className="grid h-11 w-11 place-items-center rounded-full border border-[#d9b49c]/75 bg-black/20 text-[#d9b49c] transition duration-300 group-hover:border-[#efd0b8] group-hover:bg-[#d9b49c]/10">
               ◇
             </span>
             <span>
@@ -183,21 +183,22 @@ export default function Home() {
               УЛЫБКИ
             </span>
           </a>
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center rounded-[1.15rem] border border-white/10 bg-[#111313]/55 p-1.5 shadow-[0_16px_45px_rgba(0,0,0,.18)] backdrop-blur-xl md:flex">
             {["Услуги", "О клинике", "Врачи", "Контакты"].map((item, index) => (
               <a
                 key={item}
                 href={["#services", "#clinic", "#doctors", "#contacts"][index]}
-                className="rounded-full px-5 py-3 text-[15px] text-white/80 transition hover:bg-white/10 hover:text-white"
+                className="group relative flex min-h-12 items-center rounded-xl px-5 text-[15px] font-medium text-white/70 transition duration-300 hover:bg-white/[.1] hover:text-white focus-visible:bg-white/[.1] focus-visible:outline-none"
               >
+                <span className="mr-2 text-[9px] font-bold tracking-[.12em] text-[#d9b49c]/0 transition duration-300 group-hover:text-[#d9b49c]">0{index + 1}</span>
                 {item}
               </a>
             ))}
           </div>
           <div className="hidden md:block">
-            <Button asChild variant="light" size="nav">
+            <Button asChild variant="gold" size="nav" className="gold-shine relative h-[52px] overflow-hidden px-7 shadow-[0_10px_30px_rgba(217,180,156,.18)]">
               <a href="tel:+79232323230">
-                Позвонить <ArrowRight className="ml-5 h-4 w-4" />
+                Записаться <ArrowRight className="ml-5 h-4 w-4" />
               </a>
             </Button>
           </div>
