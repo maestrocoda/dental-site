@@ -113,6 +113,7 @@ function mountImplantScene(
   const isMobile = window.matchMedia("(max-width: 768px)").matches;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const canvas = document.createElement("canvas");
+  canvas.className = "relative z-10 h-full w-full";
   host.appendChild(canvas);
 
   const scene = new THREE.Scene();
@@ -285,6 +286,7 @@ function mountImplantScene(
     renderer.render(scene, camera);
   };
   render();
+  host.querySelector<HTMLElement>("[data-implant-fallback]")?.classList.add("opacity-0");
 
   return () => {
     window.cancelAnimationFrame(frame);
@@ -336,9 +338,16 @@ export function ImplantCanvas({ modelUrl, triggerRef }: ImplantCanvasProps) {
   return (
     <div
       ref={hostRef}
-      className="h-full w-full"
+      className="relative h-full w-full"
       aria-label="Интерактивная 3D-визуализация имплантата. Потяните мышью или пальцем, чтобы вращать"
       role="img"
-    />
+    >
+      <img
+        data-implant-fallback
+        src="/technology/implant-concept-v2.png"
+        alt=""
+        className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain p-6 opacity-90 transition-opacity duration-700"
+      />
+    </div>
   );
 }

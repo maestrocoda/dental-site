@@ -165,7 +165,7 @@ export default function Home() {
           <source src="/videos/hero-reception.webm" type="video/webm" />
           <source src="/videos/hero-reception.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.92)_32%,rgba(5,6,6,.61)_55%,rgba(5,6,6,.3)_100%)]" />
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_46%,rgba(5,6,6,.18),transparent_34%),linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.93)_34%,rgba(5,6,6,.66)_60%,rgba(5,6,6,.35)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
         <nav
           className="relative z-10 mx-auto flex max-w-[1400px] items-center justify-between px-5 py-5 sm:px-6 lg:px-10 lg:py-6"
@@ -248,7 +248,7 @@ export default function Home() {
                       }
                       className="group flex items-center justify-between border-b border-white/10 py-5"
                     >
-                      <span className="flex items-start gap-4"><span className="pt-1 text-[10px] font-bold tracking-[.16em] text-[#d9b49c]">0{index + 1}</span><span className="font-serif text-[2.45rem] leading-none tracking-[-.05em] text-white">{item}</span></span>
+                      <span className="font-serif text-[2.45rem] leading-none tracking-[-.05em] text-white">{item}</span>
                       <ArrowRight className="h-5 w-5 text-white/35 transition duration-300 group-hover:translate-x-1 group-hover:text-[#d9b49c]" />
                     </motion.a>
                   ),
@@ -622,11 +622,11 @@ export default function Home() {
                 <iframe
                   title="Карта: Архитектура улыбки"
                   src="https://www.google.com/maps?q=%D0%96%D0%B5%D0%BB%D0%B5%D0%B7%D0%BD%D0%BE%D0%B4%D0%BE%D1%80%D0%BE%D0%B6%D0%BD%D0%B0%D1%8F%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0%2018,%20%D0%9D%D0%BE%D0%B2%D0%BE%D1%81%D0%B8%D0%B8%D1%80%D1%81%D0%BA&output=embed"
-                  className="absolute inset-0 h-full w-full border-0 opacity-80 grayscale"
+                  className="absolute inset-0 h-full w-full scale-[1.02] border-0 opacity-70 grayscale contrast-[.9] saturate-[.7] transition duration-700"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
-                <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/15 bg-[#111212]/90 p-5 backdrop-blur">
+                <div className="absolute inset-x-5 bottom-5 rounded-2xl border border-white/15 bg-[linear-gradient(135deg,rgba(19,20,20,.96),rgba(19,20,20,.82))] p-5 shadow-[0_16px_45px_rgba(0,0,0,.3)] backdrop-blur-xl">
                   <p className="flex items-center gap-2 text-xs font-bold tracking-[.14em] text-[#e6c3a7]">
                     <MapPin className="h-4 w-4" /> КАК НАС НАЙТИ
                   </p>
