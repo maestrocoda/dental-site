@@ -5,7 +5,6 @@ import {
   motion,
   useMotionValueEvent,
   useScroll,
-  useTransform,
 } from "framer-motion";
 import {
   ArrowRight,
@@ -22,6 +21,7 @@ import {
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
+import { ImplantCanvas } from "@/components/implant-3d";
 
 const services = [
   [
@@ -936,12 +936,6 @@ function ImplantExperience() {
     target: sectionRef,
     offset: ["start end", "end start"],
   });
-  const rotateY = useTransform(scrollYProgress, [0, 0.27, 0.58, 1], [-24, 26, -20, 18]);
-  const rotateZ = useTransform(scrollYProgress, [0, 0.5, 1], [-7, 4, -5]);
-  const y = useTransform(scrollYProgress, [0, 0.5, 1], [50, -12, -48]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.84, 1.05, 0.93]);
-  const sheenOpacity = useTransform(scrollYProgress, [0, 0.5, 1], [0.08, 0.36, 0.12]);
-
   useMotionValueEvent(scrollYProgress, "change", (progress) => {
     const nextStep = progress < 0.39 ? 0 : progress < 0.71 ? 1 : 2;
     setActiveStep((current) => (current === nextStep ? current : nextStep));
@@ -968,12 +962,11 @@ function ImplantExperience() {
             </div>
             <p className="mt-9 max-w-sm text-xs leading-5 text-white/38">Демонстрационная визуализация. Окончательное решение о лечении принимает врач после диагностики.</p>
           </div>
-          <div className="relative mx-auto flex h-[min(68vh,720px)] w-full max-w-[620px] items-center justify-center" style={{ perspective: "1200px" }}>
+          <div className="relative mx-auto flex h-[min(68vh,720px)] w-full max-w-[620px] items-center justify-center">
             <div className="absolute inset-[12%] rounded-full bg-[#d9b49c]/15 blur-[100px]" />
-            <motion.div style={{ rotateY, rotateZ, y, scale, transformStyle: "preserve-3d" }} className="relative z-10 h-full w-full will-change-transform">
-              <img src="/technology/implant-concept-v2.png" alt="Демонстрационная 3D-визуализация дентального имплантата" className="h-full w-full object-contain drop-shadow-[0_40px_70px_rgba(0,0,0,.68)]" />
-              <motion.div style={{ opacity: sheenOpacity }} className="pointer-events-none absolute inset-[18%_12%] rounded-full bg-[#f3d4ba]/25 blur-3xl" />
-            </motion.div>
+            <div className="relative z-10 h-full w-full will-change-transform">
+              <ImplantCanvas triggerRef={sectionRef} />
+            </div>
             <div className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/55 backdrop-blur">Прокрутка управляет моделью</div>
           </div>
         </div>
