@@ -971,7 +971,7 @@ function ImplantExperience() {
           <div className="relative mx-auto flex h-[min(68vh,720px)] w-full max-w-[620px] items-center justify-center" style={{ perspective: "1200px" }}>
             <div className="absolute inset-[12%] rounded-full bg-[#d9b49c]/15 blur-[100px]" />
             <motion.div style={{ rotateY, rotateZ, y, scale, transformStyle: "preserve-3d" }} className="relative z-10 h-full w-full will-change-transform">
-              <img src="/technology/implant-concept.png" alt="Демонстрационная 3D-визуализация дентального имплантата" className="h-full w-full object-contain drop-shadow-[0_40px_70px_rgba(0,0,0,.68)]" />
+              <img src="/technology/implant-concept-v2.png" alt="Демонстрационная 3D-визуализация дентального имплантата" className="h-full w-full object-contain drop-shadow-[0_40px_70px_rgba(0,0,0,.68)]" />
               <motion.div style={{ opacity: sheenOpacity }} className="pointer-events-none absolute inset-[18%_12%] rounded-full bg-[#f3d4ba]/25 blur-3xl" />
             </motion.div>
             <div className="absolute bottom-3 right-3 rounded-full border border-white/15 bg-black/25 px-4 py-2 text-[10px] font-bold uppercase tracking-[.14em] text-white/55 backdrop-blur">Прокрутка управляет моделью</div>
