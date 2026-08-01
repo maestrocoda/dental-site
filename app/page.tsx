@@ -21,7 +21,6 @@ import {
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
-import { ImplantCanvas } from "@/components/implant-3d";
 
 const services = [
   [
@@ -456,7 +455,6 @@ export default function Home() {
         </Reveal>
       </section>
     <ClinicStory />
-    <ImplantExperience />
     <section id="clinic" className="bg-[#151716] py-28">
         <div className="mx-auto grid max-w-[1400px] gap-12 px-6 lg:grid-cols-2 lg:px-10">
           <Reveal>
@@ -968,7 +966,7 @@ function ImplantExperience() {
           <div className="relative mx-auto flex h-[min(68vh,720px)] w-full max-w-[620px] items-center justify-center">
             <div className="absolute inset-[12%] rounded-full bg-[#d9b49c]/15 blur-[100px]" />
             <div className="relative z-10 h-full w-full will-change-transform">
-              <ImplantCanvas triggerRef={sectionRef} />
+              <div aria-hidden="true" />
             </div>
           </div>
         </div>
