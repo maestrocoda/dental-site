@@ -43,18 +43,6 @@ const services = [
     "Ортодонтия",
     "Планируем коррекцию прикуса так, чтобы результат был не только эстетичным, но и функциональным.",
   ],
-  [
-    "Детская стоматология",
-    "Выстраиваем спокойное знакомство с врачом и формируем привычку заботиться о зубах без страха.",
-  ],
-  [
-    "Рентген-диагностика",
-    "Используем данные исследования, чтобы принимать обоснованные решения и видеть полную клиническую картину.",
-  ],
-  [
-    "Зуботехническая лаборатория",
-    "Точность изготовления конструкций помогает добиться удобства, надёжности и естественного вида результата.",
-  ],
 ];
 
 const serviceImages = [
@@ -78,12 +66,6 @@ const serviceImages = [
     image: "/interiors/dental-room.jpg",
     alt: "Кабинет для комплексной ортодонтической помощи",
   },
-  { image: "/interiors/reception.jpg", alt: "Мягкая атмосфера зоны ожидания" },
-  {
-    image: "/interiors/dental-room.jpg",
-    alt: "Технологичное пространство для диагностики",
-  },
-  { image: "/interiors/office.jpg", alt: "Точная работа и продуманная среда" },
 ];
 
 const faqs = [
@@ -324,17 +306,17 @@ export default function Home() {
       >
         <Reveal>
           <p className="text-xs font-bold tracking-[.15em] text-[#d9b49c]">
-            НАПРАВЛЕНИЯ
+            ВАШ ЗАПРОС
           </p>
           <div className="mt-5 flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
             <h2 className="max-w-3xl font-serif text-5xl tracking-[-.06em] md:text-7xl">
-              Стоматология
+              Найдём
               <br />
-              <em className="font-normal text-[#d9b49c]">в полном объёме</em>
+              <em className="font-normal text-[#d9b49c]">нужный маршрут</em>
             </h2>
             <p className="max-w-sm text-white/60">
-              От профилактики до восстановления улыбки: выбираем нужный маршрут
-              и объясняем каждое решение простым языком.
+              Пять направлений, с которых сегодня начинается работа клиники.
+              На консультации определяем, какой следующий шаг нужен именно вам.
             </p>
           </div>
         </Reveal>
@@ -360,8 +342,9 @@ export default function Home() {
               </motion.div>
             </AnimatePresence>
             <p className="mt-5 max-w-sm text-sm leading-6 text-white/50">
-              Выберите направление. Для каждого случая врач формирует план,
-              который учитывает здоровье, эстетику и комфорт лечения.
+              Не нужно выбирать лечение по длинному списку. Расскажите, что
+              беспокоит, — врач поможет разобраться в ситуации и предложит
+              следующий шаг.
             </p>
           </div>
           <div className="divide-y divide-white/15 border-y border-white/15">
@@ -377,10 +360,7 @@ export default function Home() {
                 className="group block w-full text-left"
                 aria-pressed={activeService === index}
               >
-                <div className="flex items-start gap-5 py-6 md:gap-8 md:py-7">
-                  <span className="pt-1 text-xs text-[#d9b49c]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
+                <div className="flex items-start py-6 md:py-7">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-4">
                       <h3
