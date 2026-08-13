@@ -24,7 +24,6 @@ import { Reveal } from "@/components/reveal";
 
 function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const targetProgressRef = useRef(0);
   const renderedProgressRef = useRef(0);
@@ -71,10 +70,6 @@ function HeroVideo() {
         let next = current + (target - current) * smoothing;
         if (Math.abs(target - next) < 0.00035) next = target;
         renderedProgressRef.current = next;
-
-        if (progressRef.current) {
-          progressRef.current.style.transform = `scaleX(${next})`;
-        }
 
         if (
           Number.isFinite(video.duration) &&
@@ -187,9 +182,6 @@ function HeroVideo() {
         aria-label="Интерьер клиники Архитектура улыбки"
         src={reducedMotion ? undefined : videoSource}
       />
-      <div className="hero-scroll-progress pointer-events-none absolute inset-x-5 bottom-4 z-20 h-px bg-white/15 md:inset-x-10 md:bottom-6">
-        <div ref={progressRef} className="h-px origin-left scale-x-0 bg-[#e3bb9d] will-change-transform" />
-      </div>
       <p className="hero-scroll-hint pointer-events-none absolute right-5 top-28 z-20 hidden text-[9px] font-bold uppercase tracking-[.2em] text-white/42 md:right-10 md:block">
         Прокрутка управляет камерой
       </p>
