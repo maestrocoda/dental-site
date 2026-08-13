@@ -139,12 +139,11 @@ export default function Home() {
           loop
           playsInline
           preload="metadata"
-          poster="/interiors/reception.jpg"
+          poster="/videos/hero-clinic-desktop-poster.jpg"
           className="absolute inset-0 -z-20 h-full w-full object-cover object-[62%_center]"
           aria-label="Интерьер клиники Архитектура улыбки"
         >
-          <source src="/videos/hero-reception.webm" type="video/webm" />
-          <source src="/videos/hero-reception.mp4" type="video/mp4" />
+          <source src="/videos/hero-clinic-desktop.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_46%,rgba(5,6,6,.18),transparent_34%),linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.93)_34%,rgba(5,6,6,.66)_60%,rgba(5,6,6,.35)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
