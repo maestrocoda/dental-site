@@ -889,7 +889,7 @@ function ClinicStory() {
   const { scrollY } = useScroll();
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
+    const media = window.matchMedia("(min-width: 1024px)");
     const updateLayout = () => setIsDesktop(media.matches);
     updateLayout();
     media.addEventListener("change", updateLayout);
@@ -908,7 +908,7 @@ function ClinicStory() {
 
   return (
     <section id="story" ref={sectionRef} className="relative bg-[#0b0c0c]" aria-label="Клиника в движении">
-      <div className="px-5 py-24 md:hidden">
+      <div className="px-5 py-24 lg:hidden">
         <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#e3bb9d]">Клиника в движении</p>
         <h2 className="mt-5 max-w-sm font-serif text-5xl leading-[.92] tracking-[-.06em] text-[#f8f5f0]">
           Путь, в котором всё понятно
@@ -928,20 +928,20 @@ function ClinicStory() {
         </div>
       </div>
 
-      <div className="relative hidden h-[285vh] md:block">
+      <div className="relative hidden h-[285vh] lg:block">
         <div className="sticky top-0 flex h-screen min-h-[680px] items-center overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_45%,rgba(217,180,156,.11),transparent_32%),linear-gradient(135deg,#080909,#111313_58%,#0a0b0b)]" />
-          <div className="relative mx-auto grid w-full max-w-[1400px] items-center gap-14 px-8 lg:grid-cols-[.76fr_1.24fr] lg:px-10 xl:gap-20">
-            <div className="relative z-10 min-h-[450px]">
+          <div className="relative mx-auto grid w-full max-w-[1400px] grid-cols-[.76fr_1.24fr] items-center gap-14 px-10 xl:gap-20">
+            <div className="relative z-10 flex min-h-[450px] flex-col justify-center">
               <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/38">Клиника в движении</p>
             <AnimatePresence mode="wait">
-              <motion.div key={storyFrames[storyStage].title} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="absolute inset-x-0 top-1/2 -translate-y-1/2">
+              <motion.div key={storyFrames[storyStage].title} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="mt-16">
                 <p className="text-xs font-bold uppercase tracking-[.18em] text-[#e3bb9d]">{storyFrames[storyStage].eyebrow}</p>
                 <h2 className="mt-6 max-w-[560px] font-serif text-[clamp(3.6rem,5.2vw,6.4rem)] leading-[.89] tracking-[-.065em] text-[#f8f5f0]">{storyFrames[storyStage].title}</h2>
                 <p className="mt-7 max-w-[500px] text-base leading-7 text-white/62 lg:text-lg lg:leading-8">{storyFrames[storyStage].text}</p>
               </motion.div>
             </AnimatePresence>
-              <div className="absolute bottom-0 left-0 flex gap-2">
+              <div className="mt-10 flex gap-2">
                 {storyFrames.map((frame, index) => (
                   <span key={frame.video} className={`h-1 rounded-full transition-all duration-500 ${storyStage === index ? "w-12 bg-[#e3bb9d]" : "w-5 bg-white/18"}`} />
                 ))}
