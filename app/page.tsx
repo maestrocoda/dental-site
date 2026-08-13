@@ -24,59 +24,143 @@ import { Reveal } from "@/components/reveal";
 
 function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
-  const targetTimeRef = useRef(0);
-  const [enabled, setEnabled] = useState(false);
+  const targetProgressRef = useRef(0);
+  const renderedProgressRef = useRef(0);
+  const [layout, setLayout] = useState<"desktop" | "mobile" | null>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const desktop = window.matchMedia("(min-width: 768px)");
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMode = () => setEnabled(desktop.matches && !reducedMotion.matches);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMode = () => {
+      setLayout(desktop.matches ? "desktop" : "mobile");
+      setReducedMotion(reduced.matches);
+    };
     updateMode();
     desktop.addEventListener("change", updateMode);
-    reducedMotion.addEventListener("change", updateMode);
+    reduced.addEventListener("change", updateMode);
     return () => {
       desktop.removeEventListener("change", updateMode);
-      reducedMotion.removeEventListener("change", updateMode);
+      reduced.removeEventListener("change", updateMode);
     };
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || !enabled) return;
+    const section = video?.closest("section");
+    if (!video || !section || layout === null || reducedMotion) return;
 
-    const animateToTarget = () => {
-      const delta = targetTimeRef.current - video.currentTime;
-      if (Math.abs(delta) < 0.02) {
-        video.currentTime = targetTimeRef.current;
-        animationRef.current = null;
-        return;
+    let cancelled = false;
+    let scrollTriggerCleanup: (() => void) | undefined;
+    let lastFrameAt = performance.now();
+    let lastSeekAt = 0;
+
+    const startRenderLoop = () => {
+      if (animationRef.current !== null || cancelled) return;
+      lastFrameAt = performance.now();
+
+      const renderFrame = (now: number) => {
+        const elapsed = Math.min(now - lastFrameAt, 48);
+        lastFrameAt = now;
+        const target = targetProgressRef.current;
+        const current = renderedProgressRef.current;
+        const smoothing = 1 - Math.exp(-elapsed / 90);
+        let next = current + (target - current) * smoothing;
+        if (Math.abs(target - next) < 0.00035) next = target;
+        renderedProgressRef.current = next;
+
+        if (progressRef.current) {
+          progressRef.current.style.transform = `scaleX(${next})`;
+        }
+
+        if (
+          Number.isFinite(video.duration) &&
+          video.duration > 0 &&
+          !video.seeking &&
+          now - lastSeekAt > 28
+        ) {
+          const frameDuration = 1 / 25;
+          const rawTime = next * Math.max(video.duration - 0.04, 0);
+          const frameTime = Math.round(rawTime / frameDuration) * frameDuration;
+          if (Math.abs(video.currentTime - frameTime) >= frameDuration * 0.72) {
+            video.currentTime = frameTime;
+            lastSeekAt = now;
+          }
+        }
+
+        if (Math.abs(target - next) > 0.00035 || video.seeking) {
+          animationRef.current = requestAnimationFrame(renderFrame);
+        } else {
+          animationRef.current = null;
+        }
+      };
+
+      animationRef.current = requestAnimationFrame(renderFrame);
+    };
+
+    const onSeeked = () => {
+      if (Math.abs(targetProgressRef.current - renderedProgressRef.current) > 0.00035) {
+        startRenderLoop();
       }
-      video.currentTime += delta * 0.16;
-      animationRef.current = requestAnimationFrame(animateToTarget);
     };
 
-    const syncToScroll = () => {
-      const section = video.closest("section");
-      if (!section || !Number.isFinite(video.duration) || video.duration <= 0) return;
-      const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const progress = Math.min(Math.max(-section.getBoundingClientRect().top / travel, 0), 1);
-      targetTimeRef.current = progress * video.duration * 0.985;
-      if (animationRef.current === null) animationRef.current = requestAnimationFrame(animateToTarget);
+    const prepare = async () => {
+      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+        import("gsap"),
+        import("gsap/ScrollTrigger"),
+      ]);
+      if (cancelled) return;
+      gsap.registerPlugin(ScrollTrigger);
+
+      const trigger = ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: "bottom bottom",
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          targetProgressRef.current = self.progress;
+          startRenderLoop();
+        },
+        onRefresh: (self) => {
+          targetProgressRef.current = self.progress;
+          startRenderLoop();
+        },
+      });
+      scrollTriggerCleanup = () => trigger.kill();
+      targetProgressRef.current = trigger.progress;
+      startRenderLoop();
     };
 
+    setReady(false);
+    renderedProgressRef.current = targetProgressRef.current;
+    video.addEventListener("seeked", onSeeked);
     video.load();
-    window.addEventListener("scroll", syncToScroll, { passive: true });
-    window.addEventListener("resize", syncToScroll);
-    syncToScroll();
+    void prepare();
+
+    const unlockVideo = () => {
+      void video.play().then(() => video.pause()).catch(() => undefined);
+    };
+    document.documentElement.addEventListener("touchstart", unlockVideo, { once: true, passive: true });
+
     return () => {
-      window.removeEventListener("scroll", syncToScroll);
-      window.removeEventListener("resize", syncToScroll);
+      cancelled = true;
+      scrollTriggerCleanup?.();
+      video.removeEventListener("seeked", onSeeked);
+      document.documentElement.removeEventListener("touchstart", unlockVideo);
       if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     };
-  }, [enabled]);
+  }, [layout, reducedMotion]);
+
+  const videoSource =
+    layout === "mobile"
+      ? "/videos/clinic-tour-scrub-mobile.mp4"
+      : layout === "desktop"
+        ? "/videos/clinic-tour-scrub-desktop.mp4"
+        : undefined;
 
   return (
     <>
@@ -93,16 +177,22 @@ function HeroVideo() {
         ref={videoRef}
         muted
         playsInline
-        preload={enabled ? "auto" : "none"}
-        poster="/videos/clinic-corridor-poster.jpg"
+        preload={layout === null || reducedMotion ? "none" : "auto"}
+        poster={layout === "mobile" ? "/videos/hero-clinic-mobile-poster.jpg" : "/videos/hero-clinic-desktop-poster.jpg"}
         onLoadedData={() => setReady(true)}
         onLoadedMetadata={(event) => {
-          event.currentTarget.currentTime = targetTimeRef.current;
+          event.currentTarget.currentTime = targetProgressRef.current * Math.max(event.currentTarget.duration - 0.04, 0);
         }}
         className={`absolute inset-0 -z-20 h-full w-full object-cover object-center transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
         aria-label="Интерьер клиники Архитектура улыбки"
-        src={enabled ? "/videos/clinic-corridor.mp4" : undefined}
+        src={reducedMotion ? undefined : videoSource}
       />
+      <div className="pointer-events-none absolute inset-x-5 bottom-4 z-20 h-px bg-white/15 md:inset-x-10 md:bottom-6">
+        <div ref={progressRef} className="h-px origin-left scale-x-0 bg-[#e3bb9d] will-change-transform" />
+      </div>
+      <p className="pointer-events-none absolute right-5 top-28 z-20 hidden text-[9px] font-bold uppercase tracking-[.2em] text-white/42 md:right-10 md:block">
+        Прокрутка управляет камерой
+      </p>
     </>
   );
 }
@@ -217,8 +307,8 @@ export default function Home() {
   }
   return (
       <main className="min-h-screen bg-[#0b0c0c] text-[#f8f5f0]">
-      <section className="hero-shell relative isolate md:h-[220svh]">
-        <div className="relative isolate overflow-hidden md:sticky md:top-0 md:h-screen">
+      <section className="hero-shell relative isolate h-[330svh] md:h-[410svh]">
+        <div className="relative isolate sticky top-0 h-[100svh] min-h-[560px] overflow-hidden">
         <HeroVideo />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_46%,rgba(5,6,6,.18),transparent_34%),linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.93)_34%,rgba(5,6,6,.66)_60%,rgba(5,6,6,.35)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
@@ -874,143 +964,138 @@ function Journey({
 }
 
 const storyFrames = [
-  { eyebrow: "01 / Пространство", title: "Спокойствие начинается ещё до приёма", text: "Свет, тишина и продуманный интерьер помогают освоиться и почувствовать себя увереннее." },
-  { eyebrow: "02 / Маршрут", title: "Каждый следующий шаг понятен", text: "От первого разговора до кабинета — без больничной суеты и ощущения неизвестности." },
-  { eyebrow: "03 / Кабинет", title: "Всё готово для точной работы", text: "Современное пространство поддерживает спокойный ритм врача и пациента на каждом этапе." },
+  { video: "/videos/clinic-corridor.mp4", poster: "/videos/clinic-corridor-poster.jpg", eyebrow: "01 / Пространство", title: "Спокойствие начинается с пространства", text: "Тихий свет, понятный маршрут и никакой больничной суеты. Мы продумали среду, в которой легче сосредоточиться на главном." },
+  { video: "/videos/clinic-room.mp4", poster: "/videos/clinic-room-poster.jpg", eyebrow: "02 / Диагностика", title: "Точность начинается с деталей", text: "Врач собирает данные, объясняет ситуацию и только после диагностики предлагает последовательный план лечения." },
+  { video: "/videos/treatment-room.mp4", poster: "/videos/treatment-room-poster.jpg", eyebrow: "03 / Лечение", title: "Внимание в каждом движении", text: "Оснащение помогает врачу работать точнее, а согласованная команда — проводить пациента через все этапы без лишней неопределённости." },
 ];
+
+function MobileStoryClip({ video, poster, enabled }: { video: string; poster: string; enabled: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const element = videoRef.current;
+    if (!element || !enabled) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void element.play().catch(() => undefined);
+        else element.pause();
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [enabled]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={enabled ? video : undefined}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      className="h-full w-full object-cover"
+    />
+  );
+}
 
 function ClinicStory() {
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
   const [storyStage, setStoryStage] = useState(0);
+  const [storyProgress, setStoryProgress] = useState(0);
   const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
+  const { scrollY } = useScroll();
 
   useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
+    const media = window.matchMedia("(min-width: 1024px)");
     const updateLayout = () => setIsDesktop(media.matches);
     updateLayout();
     media.addEventListener("change", updateLayout);
     return () => media.removeEventListener("change", updateLayout);
   }, []);
 
-  useEffect(() => {
+  useMotionValueEvent(scrollY, "change", (latest) => {
     const section = sectionRef.current;
-    const video = videoRef.current;
-    const progressLine = progressRef.current;
-    if (!section || !video || isDesktop === null) return;
-
-    let timelineCleanup: (() => void) | undefined;
-    let cancelled = false;
-
-    const prepare = async () => {
-      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
-        import("gsap"),
-        import("gsap/ScrollTrigger"),
-      ]);
-      if (cancelled) return;
-      gsap.registerPlugin(ScrollTrigger);
-
-      const createTimeline = () => {
-        if (cancelled || !Number.isFinite(video.duration) || video.duration <= 0) return;
-        video.pause();
-        video.currentTime = 0;
-
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-          video.currentTime = Math.min(video.duration * 0.32, video.duration - 0.05);
-          return;
-        }
-
-        const timeline = gsap.timeline({
-          defaults: { ease: "none" },
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: isDesktop ? 0.32 : 0.18,
-            invalidateOnRefresh: true,
-            onUpdate: (self) => {
-              if (progressLine) progressLine.style.transform = `scaleX(${self.progress})`;
-              const nextStage = self.progress < 0.34 ? 0 : self.progress < 0.68 ? 1 : 2;
-              setStoryStage((current) => (current === nextStage ? current : nextStage));
-            },
-          },
-        });
-
-        timeline.fromTo(video, { currentTime: 0 }, { currentTime: Math.max(video.duration - 0.04, 0) });
-        timelineCleanup = () => {
-          timeline.scrollTrigger?.kill();
-          timeline.kill();
-        };
-      };
-
-      if (video.readyState >= 1) createTimeline();
-      else video.addEventListener("loadedmetadata", createTimeline, { once: true });
-
-      const unlockVideo = () => {
-        void video.play().then(() => video.pause()).catch(() => undefined);
-      };
-      document.documentElement.addEventListener("touchstart", unlockVideo, { once: true, passive: true });
-
-      return () => {
-        video.removeEventListener("loadedmetadata", createTimeline);
-        document.documentElement.removeEventListener("touchstart", unlockVideo);
-        timelineCleanup?.();
-      };
-    };
-
-    let prepareCleanup: (() => void) | undefined;
-    void prepare().then((cleanup) => {
-      if (cancelled) cleanup?.();
-      else prepareCleanup = cleanup;
-    });
-    return () => {
-      cancelled = true;
-      prepareCleanup?.();
-    };
-  }, [isDesktop]);
+    if (!section || window.innerWidth < 768) return;
+    const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
+    const progress = Math.min(Math.max((latest - section.offsetTop) / travel, 0), 1);
+    setStoryProgress(progress);
+    const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
+    setStoryStage((current) => (current === stage ? current : stage));
+  });
 
   return (
-    <section id="story" ref={sectionRef} className="relative h-[500vh] bg-[#090a0a]" aria-label="Видео-прогулка по клинике">
-      <div className="sticky top-0 h-[100svh] min-h-[560px] overflow-hidden bg-[#111312]">
-        <video
-          ref={videoRef}
-          src={isDesktop === null ? undefined : isDesktop ? "/videos/clinic-tour-scrub-desktop.mp4" : "/videos/clinic-tour-scrub-mobile.mp4"}
-          poster={isDesktop === false ? "/videos/hero-clinic-mobile-poster.jpg" : "/videos/clinic-corridor-poster.jpg"}
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 h-full w-full object-cover"
-          aria-label="Плавная прогулка по интерьеру клиники"
-        />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,6,.76)_0%,rgba(5,6,6,.38)_38%,rgba(5,6,6,.04)_72%),linear-gradient(0deg,rgba(5,6,6,.72)_0%,transparent_42%,rgba(5,6,6,.18)_100%)] md:bg-[linear-gradient(90deg,rgba(5,6,6,.82)_0%,rgba(5,6,6,.48)_34%,rgba(5,6,6,.02)_70%),linear-gradient(0deg,rgba(5,6,6,.48)_0%,transparent_46%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/45 to-transparent" />
+    <section id="story" ref={sectionRef} className="relative bg-[#0b0c0c]" aria-label="Клиника в движении">
+      <div className="px-5 py-24 lg:hidden">
+        <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#e3bb9d]">Клиника в движении</p>
+        <h2 className="mt-5 max-w-sm font-serif text-5xl leading-[.92] tracking-[-.06em] text-[#f8f5f0]">
+          Путь, в котором всё понятно
+        </h2>
+        <div className="mt-12 space-y-16">
+          {storyFrames.map((frame) => (
+            <article key={frame.video}>
+              <div className="relative aspect-video overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#171918] shadow-[0_24px_70px_rgba(0,0,0,.34)]">
+                <MobileStoryClip video={frame.video} poster={frame.poster} enabled={isDesktop === false} />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+              </div>
+              <p className="mt-6 text-[10px] font-bold uppercase tracking-[.18em] text-[#e3bb9d]">{frame.eyebrow}</p>
+              <h3 className="mt-3 font-serif text-[2.15rem] leading-[.98] tracking-[-.045em] text-[#f8f5f0]">{frame.title}</h3>
+              <p className="mt-4 text-[15px] leading-6 text-white/60">{frame.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
 
-        <div className="relative mx-auto flex h-full max-w-[1400px] items-end px-5 pb-24 pt-24 md:items-center md:px-10 md:pb-20">
-          <div className="w-full max-w-[610px]">
-            <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/48">Scroll story / Архитектура улыбки</p>
-            <motion.div
-              key={storyFrames[storyStage].title}
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-9"
-            >
-              <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#e3bb9d]">{storyFrames[storyStage].eyebrow}</p>
-              <h2 className="mt-5 max-w-[600px] font-serif text-[clamp(2.7rem,5.4vw,6.2rem)] leading-[.91] tracking-[-.06em] text-[#f8f5f0]">{storyFrames[storyStage].title}</h2>
-              <p className="mt-6 max-w-[480px] text-[15px] leading-6 text-white/68 md:text-lg md:leading-8">{storyFrames[storyStage].text}</p>
-            </motion.div>
-            <div className="mt-8 flex gap-2">
-              {storyFrames.map((frame, index) => (
-                <span key={frame.title} className={`h-1 rounded-full transition-all duration-500 ${storyStage === index ? "w-12 bg-[#e3bb9d]" : "w-5 bg-white/25"}`} />
-              ))}
+      <div className="relative hidden h-[285vh] lg:block">
+        <div className="sticky top-0 flex h-screen min-h-[680px] items-center overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_45%,rgba(217,180,156,.11),transparent_32%),linear-gradient(135deg,#080909,#111313_58%,#0a0b0b)]" />
+          <div className="relative mx-auto grid w-full max-w-[1400px] grid-cols-[.76fr_1.24fr] items-center gap-14 px-10 xl:gap-20">
+            <div className="relative z-10 flex min-h-[450px] flex-col justify-center">
+              <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/38">Клиника в движении</p>
+              <AnimatePresence mode="wait">
+                <motion.div key={storyFrames[storyStage].title} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="mt-16">
+                  <p className="text-xs font-bold uppercase tracking-[.18em] text-[#e3bb9d]">{storyFrames[storyStage].eyebrow}</p>
+                  <h2 className="mt-6 max-w-[560px] font-serif text-[clamp(3.6rem,5.2vw,6.4rem)] leading-[.89] tracking-[-.065em] text-[#f8f5f0]">{storyFrames[storyStage].title}</h2>
+                  <p className="mt-7 max-w-[500px] text-base leading-7 text-white/62 lg:text-lg lg:leading-8">{storyFrames[storyStage].text}</p>
+                </motion.div>
+              </AnimatePresence>
+              <div className="mt-10 flex gap-2">
+                {storyFrames.map((frame, index) => (
+                  <span key={frame.video} className={`h-1 rounded-full transition-all duration-500 ${storyStage === index ? "w-12 bg-[#e3bb9d]" : "w-5 bg-white/18"}`} />
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-8 rounded-[3rem] bg-[#d9b49c]/[.055] blur-3xl" />
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] border border-white/12 bg-[#161818] shadow-[0_35px_100px_rgba(0,0,0,.48)]">
+                <AnimatePresence mode="wait">
+                  <motion.video
+                    key={storyFrames[storyStage].video}
+                    src={isDesktop ? storyFrames[storyStage].video : undefined}
+                    poster={storyFrames[storyStage].poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    initial={{ opacity: 0, scale: 1.025 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full w-full object-cover"
+                  />
+                </AnimatePresence>
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/[.07]" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
+                <p className="absolute bottom-6 left-7 text-[10px] font-bold uppercase tracking-[.18em] text-white/62">Дом функциональной стоматологии</p>
+              </div>
             </div>
           </div>
-        </div>
-
-        <p className="absolute right-5 top-6 text-[9px] font-bold uppercase tracking-[.2em] text-white/45 md:right-10 md:top-8">Прокрутка управляет камерой</p>
-        <div className="absolute bottom-7 left-5 right-5 h-px bg-white/18 md:bottom-9 md:left-10 md:right-10">
-          <div ref={progressRef} className="h-px origin-left scale-x-0 bg-[#e3bb9d] will-change-transform" />
+          <div className="absolute bottom-8 left-1/2 h-px w-[min(92vw,1320px)] -translate-x-1/2 bg-white/10">
+            <motion.div animate={{ width: `${storyProgress * 100}%` }} transition={{ duration: 0.15, ease: "linear" }} className="h-px bg-[#e3bb9d]" />
+          </div>
         </div>
       </div>
     </section>
