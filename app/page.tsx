@@ -182,9 +182,6 @@ function HeroVideo() {
         aria-label="Интерьер клиники Архитектура улыбки"
         src={reducedMotion ? undefined : videoSource}
       />
-      <p className="hero-scroll-hint pointer-events-none absolute right-5 top-28 z-20 hidden text-[9px] font-bold uppercase tracking-[.2em] text-white/42 md:right-10 md:block">
-        Прокрутка управляет камерой
-      </p>
     </>
   );
 }
@@ -432,7 +429,7 @@ export default function Home() {
               </Button>
             </div>
           </motion.div>
-          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }} className="hero-corner-caption absolute bottom-14 right-6 hidden max-w-[230px] border-l border-white/60 pl-5 font-serif text-3xl leading-none text-white/95 lg:right-10 lg:block">
+          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }} className="hero-corner-caption absolute bottom-24 right-6 hidden max-w-[230px] border-l border-white/60 pl-5 font-serif text-3xl leading-[1.05] text-white/95 lg:right-10 lg:block">
             Интерьер, в котором спокойно
           </motion.p>
         </div>
