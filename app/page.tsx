@@ -24,28 +24,59 @@ import { Reveal } from "@/components/reveal";
 
 function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const targetTimeRef = useRef(0);
+  const [enabled, setEnabled] = useState(false);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const media = window.matchMedia("(max-width: 767px)");
-    const updateSource = () => setIsMobile(media.matches);
-    updateSource();
-    media.addEventListener("change", updateSource);
-    return () => media.removeEventListener("change", updateSource);
+    const desktop = window.matchMedia("(min-width: 768px)");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMode = () => setEnabled(desktop.matches && !reducedMotion.matches);
+    updateMode();
+    desktop.addEventListener("change", updateMode);
+    reducedMotion.addEventListener("change", updateMode);
+    return () => {
+      desktop.removeEventListener("change", updateMode);
+      reducedMotion.removeEventListener("change", updateMode);
+    };
   }, []);
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video || isMobile === null) return;
-    video.load();
-    void video.play().catch(() => undefined);
-  }, [isMobile]);
+    if (!video || !enabled) return;
 
-  const poster = isMobile === null
-    ? undefined
-    : isMobile
-    ? "/videos/hero-clinic-mobile-poster.jpg"
-    : "/videos/hero-clinic-desktop-poster.jpg";
+    const animateToTarget = () => {
+      const delta = targetTimeRef.current - video.currentTime;
+      if (Math.abs(delta) < 0.02) {
+        video.currentTime = targetTimeRef.current;
+        animationRef.current = null;
+        return;
+      }
+      video.currentTime += delta * 0.16;
+      animationRef.current = requestAnimationFrame(animateToTarget);
+    };
+
+    const syncToScroll = () => {
+      const section = video.closest("section");
+      if (!section || !Number.isFinite(video.duration) || video.duration <= 0) return;
+      const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const progress = Math.min(Math.max(-section.getBoundingClientRect().top / travel, 0), 1);
+      targetTimeRef.current = progress * video.duration * 0.985;
+      if (animationRef.current === null) animationRef.current = requestAnimationFrame(animateToTarget);
+    };
+
+    video.load();
+    window.addEventListener("scroll", syncToScroll, { passive: true });
+    window.addEventListener("resize", syncToScroll);
+    syncToScroll();
+    return () => {
+      window.removeEventListener("scroll", syncToScroll);
+      window.removeEventListener("resize", syncToScroll);
+      if (animationRef.current !== null) cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    };
+  }, [enabled]);
 
   return (
     <>
@@ -60,22 +91,18 @@ function HeroVideo() {
       </picture>
       <video
         ref={videoRef}
-        autoPlay
         muted
-        loop
         playsInline
-        preload="metadata"
-        poster={poster}
-        className={`absolute inset-0 -z-20 h-full w-full object-cover object-center transition-opacity duration-500 md:object-[62%_center] ${isMobile === null ? "opacity-0" : "opacity-100"}`}
+        preload={enabled ? "auto" : "none"}
+        poster="/videos/clinic-corridor-poster.jpg"
+        onLoadedData={() => setReady(true)}
+        onLoadedMetadata={(event) => {
+          event.currentTarget.currentTime = targetTimeRef.current;
+        }}
+        className={`absolute inset-0 -z-20 h-full w-full object-cover object-center transition-opacity duration-700 ${ready ? "opacity-100" : "opacity-0"}`}
         aria-label="Интерьер клиники Архитектура улыбки"
-      >
-        {isMobile !== null && (
-          <source
-            src={isMobile ? "/videos/hero-clinic-mobile.mp4" : "/videos/hero-clinic-desktop.mp4"}
-            type="video/mp4"
-          />
-        )}
-      </video>
+        src={enabled ? "/videos/clinic-corridor.mp4" : undefined}
+      />
     </>
   );
 }
@@ -190,7 +217,8 @@ export default function Home() {
   }
   return (
       <main className="min-h-screen bg-[#0b0c0c] text-[#f8f5f0]">
-      <section className="hero-shell relative isolate overflow-hidden">
+      <section className="hero-shell relative isolate md:h-[220svh]">
+        <div className="relative isolate overflow-hidden md:sticky md:top-0 md:h-screen">
         <HeroVideo />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_46%,rgba(5,6,6,.18),transparent_34%),linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.93)_34%,rgba(5,6,6,.66)_60%,rgba(5,6,6,.35)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
@@ -325,6 +353,7 @@ export default function Home() {
           <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }} className="absolute bottom-9 right-6 hidden max-w-[230px] border-l border-white/60 pl-5 font-serif text-3xl leading-none text-white/95 lg:right-10 lg:block">
             Интерьер, в котором спокойно
           </motion.p>
+        </div>
         </div>
       </section>
       <Reveal className="relative z-10 mx-auto -mt-3 max-w-[1400px] px-6 lg:px-10">
@@ -881,6 +910,42 @@ function MobileStoryClip({ video, poster, enabled }: { video: string; poster: st
   );
 }
 
+function ScrollStoryVideo({ video, poster, progress, enabled }: { video: string; poster: string; progress: number; enabled: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const pendingTime = useRef(0);
+
+  const syncFrame = () => {
+    const element = videoRef.current;
+    if (!element || !Number.isFinite(element.duration) || element.duration <= 0) return;
+    const target = Math.min(Math.max(pendingTime.current, 0), 0.995) * element.duration;
+    if (Math.abs(element.currentTime - target) > 0.025) element.currentTime = target;
+  };
+
+  useEffect(() => {
+    const frameProgress = progress * storyFrames.length;
+    pendingTime.current = progress >= 1 ? 0.995 : Math.min(frameProgress - Math.floor(frameProgress), 0.995);
+    syncFrame();
+  }, [progress]);
+
+  return (
+    <motion.video
+      ref={videoRef}
+      src={enabled ? video : undefined}
+      poster={poster}
+      muted
+      playsInline
+      preload="metadata"
+      onLoadedMetadata={syncFrame}
+      initial={{ opacity: 0, scale: 1.025 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+      className="h-full w-full object-cover"
+      aria-label="Видео-прогулка по клинике"
+    />
+  );
+}
+
 function ClinicStory() {
   const sectionRef = useRef<HTMLElement>(null);
   const [storyStage, setStoryStage] = useState(0);
@@ -952,20 +1017,12 @@ function ClinicStory() {
               <div className="absolute -inset-8 rounded-[3rem] bg-[#d9b49c]/[.055] blur-3xl" />
               <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] border border-white/12 bg-[#161818] shadow-[0_35px_100px_rgba(0,0,0,.48)]">
                 <AnimatePresence mode="wait">
-                  <motion.video
+                  <ScrollStoryVideo
                     key={storyFrames[storyStage].video}
-                    src={isDesktop ? storyFrames[storyStage].video : undefined}
+                    video={storyFrames[storyStage].video}
                     poster={storyFrames[storyStage].poster}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    initial={{ opacity: 0, scale: 1.025 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-                    className="h-full w-full object-cover"
+                    progress={storyProgress}
+                    enabled={isDesktop === true}
                   />
                 </AnimatePresence>
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/[.07]" />
