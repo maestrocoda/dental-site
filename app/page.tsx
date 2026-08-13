@@ -22,6 +22,64 @@ import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "rea
 import { Button } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
 
+function HeroVideo() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const updateSource = () => setIsMobile(media.matches);
+    updateSource();
+    media.addEventListener("change", updateSource);
+    return () => media.removeEventListener("change", updateSource);
+  }, []);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || isMobile === null) return;
+    video.load();
+    void video.play().catch(() => undefined);
+  }, [isMobile]);
+
+  const poster = isMobile === null
+    ? undefined
+    : isMobile
+    ? "/videos/hero-clinic-mobile-poster.jpg"
+    : "/videos/hero-clinic-desktop-poster.jpg";
+
+  return (
+    <>
+      <picture className="absolute inset-0 -z-20">
+        <source media="(max-width: 767px)" srcSet="/videos/hero-clinic-mobile-poster.jpg" />
+        <img
+          src="/videos/hero-clinic-desktop-poster.jpg"
+          alt=""
+          className="h-full w-full object-cover object-center md:object-[62%_center]"
+          aria-hidden="true"
+        />
+      </picture>
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster={poster}
+        className={`absolute inset-0 -z-20 h-full w-full object-cover object-center transition-opacity duration-500 md:object-[62%_center] ${isMobile === null ? "opacity-0" : "opacity-100"}`}
+        aria-label="Интерьер клиники Архитектура улыбки"
+      >
+        {isMobile !== null && (
+          <source
+            src={isMobile ? "/videos/hero-clinic-mobile.mp4" : "/videos/hero-clinic-desktop.mp4"}
+            type="video/mp4"
+          />
+        )}
+      </video>
+    </>
+  );
+}
+
 const services = [
   [
     "Ортопедия",
@@ -133,18 +191,7 @@ export default function Home() {
   return (
       <main className="min-h-screen bg-[#0b0c0c] text-[#f8f5f0]">
       <section className="hero-shell relative isolate overflow-hidden">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/videos/hero-clinic-desktop-poster.jpg"
-          className="absolute inset-0 -z-20 h-full w-full object-cover object-[62%_center]"
-          aria-label="Интерьер клиники Архитектура улыбки"
-        >
-          <source src="/videos/hero-clinic-desktop.mp4" type="video/mp4" />
-        </video>
+        <HeroVideo />
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_46%,rgba(5,6,6,.18),transparent_34%),linear-gradient(90deg,rgba(5,6,6,.98)_0%,rgba(5,6,6,.93)_34%,rgba(5,6,6,.66)_60%,rgba(5,6,6,.35)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-2/5 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
         <nav
@@ -798,91 +845,139 @@ function Journey({
 }
 
 const storyFrames = [
-  { video: "/videos/clinic-corridor.mp4", poster: "/interiors/reception.jpg", eyebrow: "01 / Пространство", title: "Всё начинается со спокойствия", text: "Свет, тишина и понятный маршрут помогают почувствовать себя уверенно ещё до встречи с врачом." },
-  { video: "/videos/clinic-room.mp4", poster: "/interiors/office.jpg", eyebrow: "02 / Диалог", title: "Решение рождается вместе", text: "Мы обсуждаем ситуацию, показываем варианты и составляем план, в котором понятен каждый следующий шаг." },
-  { video: "/videos/treatment-room.mp4", poster: "/interiors/dental-room.jpg", eyebrow: "03 / Лечение", title: "Точность становится результатом", text: "Современное оснащение и командная работа объединяют диагностику, лечение и восстановление улыбки." },
+  { video: "/videos/clinic-corridor.mp4", poster: "/videos/clinic-corridor-poster.jpg", eyebrow: "01 / Пространство", title: "Спокойствие начинается с пространства", text: "Тихий свет, понятный маршрут и никакой больничной суеты. Мы продумали среду, в которой легче сосредоточиться на главном." },
+  { video: "/videos/clinic-room.mp4", poster: "/videos/clinic-room-poster.jpg", eyebrow: "02 / Диагностика", title: "Точность начинается с деталей", text: "Врач собирает данные, объясняет ситуацию и только после диагностики предлагает последовательный план лечения." },
+  { video: "/videos/treatment-room.mp4", poster: "/videos/treatment-room-poster.jpg", eyebrow: "03 / Лечение", title: "Внимание в каждом движении", text: "Оснащение помогает врачу работать точнее, а согласованная команда — проводить пациента через все этапы без лишней неопределённости." },
 ];
+
+function MobileStoryClip({ video, poster, enabled }: { video: string; poster: string; enabled: boolean }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const element = videoRef.current;
+    if (!element || !enabled) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void element.play().catch(() => undefined);
+        else element.pause();
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [enabled]);
+
+  return (
+    <video
+      ref={videoRef}
+      src={enabled ? video : undefined}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      className="h-full w-full object-cover"
+    />
+  );
+}
 
 function ClinicStory() {
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
-  const progressRef = useRef(0);
-  const frameRef = useRef<number | undefined>(undefined);
   const [storyStage, setStoryStage] = useState(0);
   const [storyProgress, setStoryProgress] = useState(0);
+  const [isDesktop, setIsDesktop] = useState<boolean | null>(null);
   const { scrollY } = useScroll();
 
-  const syncVideoFrame = (progress: number) => {
-    progressRef.current = progress;
-    if (frameRef.current) cancelAnimationFrame(frameRef.current);
-    frameRef.current = requestAnimationFrame(() => {
-      const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
-      const localProgress = Math.min(Math.max(progress * storyFrames.length - stage, 0), 0.995);
-      const video = videoRefs.current[stage];
-      if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
-      const targetTime = video.duration * localProgress;
-      if (Math.abs(video.currentTime - targetTime) > 0.015) video.currentTime = targetTime;
-    });
-  };
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const updateLayout = () => setIsDesktop(media.matches);
+    updateLayout();
+    media.addEventListener("change", updateLayout);
+    return () => media.removeEventListener("change", updateLayout);
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || window.innerWidth < 768) return;
     const travel = Math.max(section.offsetHeight - window.innerHeight, 1);
     const progress = Math.min(Math.max((latest - section.offsetTop) / travel, 0), 1);
     setStoryProgress(progress);
     const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
     setStoryStage((current) => (current === stage ? current : stage));
-    syncVideoFrame(progress);
   });
 
-  useEffect(() => () => {
-    if (frameRef.current) cancelAnimationFrame(frameRef.current);
-  }, []);
-
   return (
-    <section id="story" ref={sectionRef} className="story-scroll relative h-[270vh] bg-[#0b0c0c]" aria-label="История клиники">
-      <div className="sticky top-0 h-screen overflow-hidden">
-        {storyFrames.map((frame, index) => (
-          <motion.video
-            key={frame.video}
-            ref={(element) => { videoRefs.current[index] = element; }}
-            src={frame.video}
-            poster={frame.poster}
-            muted
-            playsInline
-            preload="auto"
-            onLoadedMetadata={(event) => {
-              const progress = progressRef.current;
-              const stage = Math.min(Math.floor(progress * storyFrames.length), storyFrames.length - 1);
-              if (stage === index && event.currentTarget.duration > 0) {
-                const localProgress = Math.min(Math.max(progress * storyFrames.length - stage, 0), 0.995);
-                event.currentTarget.currentTime = event.currentTarget.duration * localProgress;
-              }
-            }}
-            initial={false}
-            animate={{ opacity: storyStage === index ? 1 : 0, scale: storyStage === index ? 1 : 1.04 }}
-            transition={{ opacity: { duration: 0.55 }, scale: { duration: 1.5, ease: "easeOut" } }}
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover will-change-transform"
-            aria-hidden={storyStage !== index}
-          />
-        ))}
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,6,6,.88)_0%,rgba(5,6,6,.58)_37%,rgba(5,6,6,.12)_70%),linear-gradient(0deg,rgba(5,6,6,.68),transparent_48%)]" />
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#0b0c0c] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#0b0c0c] to-transparent" />
-        <div className="relative mx-auto flex h-full max-w-[1400px] items-center px-6 lg:px-10">
-          <div className="relative h-[520px] w-full max-w-[670px]">
+    <section id="story" ref={sectionRef} className="relative bg-[#0b0c0c]" aria-label="Клиника в движении">
+      <div className="px-5 py-24 md:hidden">
+        <p className="text-[11px] font-bold uppercase tracking-[.18em] text-[#e3bb9d]">Клиника в движении</p>
+        <h2 className="mt-5 max-w-sm font-serif text-5xl leading-[.92] tracking-[-.06em] text-[#f8f5f0]">
+          Путь, в котором всё понятно
+        </h2>
+        <div className="mt-12 space-y-16">
+          {storyFrames.map((frame) => (
+            <article key={frame.video}>
+              <div className="relative aspect-video overflow-hidden rounded-[1.35rem] border border-white/10 bg-[#171918] shadow-[0_24px_70px_rgba(0,0,0,.34)]">
+                <MobileStoryClip video={frame.video} poster={frame.poster} enabled={isDesktop === false} />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+              </div>
+              <p className="mt-6 text-[10px] font-bold uppercase tracking-[.18em] text-[#e3bb9d]">{frame.eyebrow}</p>
+              <h3 className="mt-3 font-serif text-[2.15rem] leading-[.98] tracking-[-.045em] text-[#f8f5f0]">{frame.title}</h3>
+              <p className="mt-4 text-[15px] leading-6 text-white/60">{frame.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative hidden h-[285vh] md:block">
+        <div className="sticky top-0 flex h-screen min-h-[680px] items-center overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_45%,rgba(217,180,156,.11),transparent_32%),linear-gradient(135deg,#080909,#111313_58%,#0a0b0b)]" />
+          <div className="relative mx-auto grid w-full max-w-[1400px] items-center gap-14 px-8 lg:grid-cols-[.76fr_1.24fr] lg:px-10 xl:gap-20">
+            <div className="relative z-10 min-h-[450px]">
+              <p className="text-[10px] font-bold uppercase tracking-[.2em] text-white/38">Клиника в движении</p>
             <AnimatePresence mode="wait">
-              <motion.div key={storyFrames[storyStage].title} initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.42, ease: "easeOut" }} className="absolute inset-0 flex flex-col justify-center">
+              <motion.div key={storyFrames[storyStage].title} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="absolute inset-x-0 top-1/2 -translate-y-1/2">
                 <p className="text-xs font-bold uppercase tracking-[.18em] text-[#e3bb9d]">{storyFrames[storyStage].eyebrow}</p>
-                <h2 className="mt-6 font-serif text-[clamp(3.2rem,6.5vw,6.8rem)] leading-[.88] tracking-[-.065em] text-[#f8f5f0]">{storyFrames[storyStage].title}</h2>
-                <p className="mt-7 max-w-lg text-base leading-7 text-white/70 md:text-lg md:leading-8">{storyFrames[storyStage].text}</p>
+                <h2 className="mt-6 max-w-[560px] font-serif text-[clamp(3.6rem,5.2vw,6.4rem)] leading-[.89] tracking-[-.065em] text-[#f8f5f0]">{storyFrames[storyStage].title}</h2>
+                <p className="mt-7 max-w-[500px] text-base leading-7 text-white/62 lg:text-lg lg:leading-8">{storyFrames[storyStage].text}</p>
               </motion.div>
             </AnimatePresence>
+              <div className="absolute bottom-0 left-0 flex gap-2">
+                {storyFrames.map((frame, index) => (
+                  <span key={frame.video} className={`h-1 rounded-full transition-all duration-500 ${storyStage === index ? "w-12 bg-[#e3bb9d]" : "w-5 bg-white/18"}`} />
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-8 rounded-[3rem] bg-[#d9b49c]/[.055] blur-3xl" />
+              <div className="relative aspect-[16/10] overflow-hidden rounded-[2rem] border border-white/12 bg-[#161818] shadow-[0_35px_100px_rgba(0,0,0,.48)]">
+                <AnimatePresence mode="wait">
+                  <motion.video
+                    key={storyFrames[storyStage].video}
+                    src={isDesktop ? storyFrames[storyStage].video : undefined}
+                    poster={storyFrames[storyStage].poster}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    initial={{ opacity: 0, scale: 1.025 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+                    className="h-full w-full object-cover"
+                  />
+                </AnimatePresence>
+                <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/[.07]" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
+                <p className="absolute bottom-6 left-7 text-[10px] font-bold uppercase tracking-[.18em] text-white/62">Дом функциональной стоматологии</p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute bottom-8 left-1/2 h-px w-[min(92vw,1320px)] -translate-x-1/2 bg-white/10">
+            <motion.div animate={{ width: `${storyProgress * 100}%` }} transition={{ duration: 0.15, ease: "linear" }} className="h-px bg-[#e3bb9d]" />
           </div>
         </div>
-        <div className="absolute bottom-10 right-6 top-1/2 hidden w-px -translate-y-1/2 bg-white/20 md:block lg:right-10"><motion.div animate={{ height: `${storyProgress * 100}%` }} transition={{ duration: 0.12, ease: "linear" }} className="w-px bg-[#e3bb9d]" /><span className="absolute -left-8 -top-8 text-[10px] tracking-[.16em] text-white/45">ПУТЬ</span></div>
-        <div className="absolute bottom-6 left-6 flex items-center gap-3 text-[10px] uppercase tracking-[.16em] text-white/45 lg:left-10"><span className="h-px w-10 bg-[#e3bb9d]" /> Прокрутите, чтобы увидеть историю</div>
       </div>
     </section>
   );
