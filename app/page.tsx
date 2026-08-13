@@ -187,10 +187,10 @@ function HeroVideo() {
         aria-label="Интерьер клиники Архитектура улыбки"
         src={reducedMotion ? undefined : videoSource}
       />
-      <div className="pointer-events-none absolute inset-x-5 bottom-4 z-20 h-px bg-white/15 md:inset-x-10 md:bottom-6">
+      <div className="hero-scroll-progress pointer-events-none absolute inset-x-5 bottom-4 z-20 h-px bg-white/15 md:inset-x-10 md:bottom-6">
         <div ref={progressRef} className="h-px origin-left scale-x-0 bg-[#e3bb9d] will-change-transform" />
       </div>
-      <p className="pointer-events-none absolute right-5 top-28 z-20 hidden text-[9px] font-bold uppercase tracking-[.2em] text-white/42 md:right-10 md:block">
+      <p className="hero-scroll-hint pointer-events-none absolute right-5 top-28 z-20 hidden text-[9px] font-bold uppercase tracking-[.2em] text-white/42 md:right-10 md:block">
         Прокрутка управляет камерой
       </p>
     </>
@@ -440,13 +440,13 @@ export default function Home() {
               </Button>
             </div>
           </motion.div>
-          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }} className="absolute bottom-9 right-6 hidden max-w-[230px] border-l border-white/60 pl-5 font-serif text-3xl leading-none text-white/95 lg:right-10 lg:block">
+          <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }} className="hero-corner-caption absolute bottom-14 right-6 hidden max-w-[230px] border-l border-white/60 pl-5 font-serif text-3xl leading-none text-white/95 lg:right-10 lg:block">
             Интерьер, в котором спокойно
           </motion.p>
         </div>
         </div>
       </section>
-      <Reveal className="relative z-10 mx-auto -mt-3 max-w-[1400px] px-6 lg:px-10">
+      <Reveal className="relative z-10 mx-auto mt-8 max-w-[1400px] px-6 md:mt-12 lg:px-10">
         <section className="overflow-hidden rounded-2xl border border-white/15 bg-[linear-gradient(110deg,#191b1b,rgba(28,23,21,.94))] md:flex">
           <Feature
             icon={<ClipboardCheck className="h-5 w-5" />}
